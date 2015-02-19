@@ -1,9 +1,9 @@
 ![](http://i.imgur.com/SKw1apG.png)
 
 Winnepego lets you write really fast parsers that work with many different
-rules into a parser implementation. Macros. What are you going to do?
 runtimes. It's able to parse so quickly by making you, the chump, twiddle your
 thumbs for dozens of milliseconds at compile time while it transforms your
+rules into a parser implementations. Macros. What are you going to do?
 
 Because all the code generation is done at compile time, it means that your
 parser will be type safe, even if your target runtime does not support such a
@@ -124,7 +124,7 @@ means" function. Take a seat and watch as we now parse signed integer.
 
 ```haxe
   static var int = Parser.apply(
-    sign > digits, // Give me a sign (optional!), then some run of digits
+    sign > digits, // Give me a sign (either '-' or ''), then some run of digits
     function(sign: String, digits: String) {
       return Std.parseInt(sign + digits);
     }
