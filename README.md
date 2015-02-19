@@ -158,10 +158,15 @@ them with functions. Here we go. Piece of cake.
 ### Primitive Rules
 
 #### Literal `'party'`
-Matches the exact string `party`.
+Matches the exact string `party`. We're going to say here that when we see the
+string `party`, that we mean the literal string `PARTY!`. This is a weird
+concept, but I'm sure you get it. One one hand, you have how it parses, and on
+the other you have what it means. I guess I could have left the second half
+option and just let you say a string is a string. But, come on. We're all
+adults, here. Say what the thing means, and everyone's going to thank you.
 
 ```haxe
-var party = Parser.apply('party', function(s: String) { return s; });
+var party = Parser.apply('party', function(s: String) { return 'PARTY!; });
 ```
 
 #### Parenthetical `('woah. deep.')`
@@ -215,7 +220,18 @@ divergence? See [Rule Syntax](#rule-syntax).
 
 ### Compound Rules
 These are your real units of composition. Before now, each rule could be reduced
-to a single value, but that's no longer the case.
+to a single value, but that's no longer the case. Let's take a paser that gets
+the current count of dogs.
+
+```haxe
+typedef Dogs(count: Int);
+
+var numDogs = apply(Parsers.int > ' dogs', function(count: Int, s: String) {
+  return Dogs(count);
+});
+```
+
+guhboy.
 
 ## Rule Syntax
 Why in the word would this pile of garbage require `++'6'` instead of `'6'*`?
