@@ -1,9 +1,9 @@
 ![](http://i.imgur.com/SKw1apG.png)
 
-Winnepego lets your write really fast parsers that work with many different
-runtimes. It's able to parse so quickly by making you, the chum, twiddle their
-thumbs for dozens of milliseconds at compile time while it transforms your
+Winnepego lets you write really fast parsers that work with many different
 rules into a parser implementation. Macros. What are you going to do?
+runtimes. It's able to parse so quickly by making you, the chump, twiddle your
+thumbs for dozens of milliseconds at compile time while it transforms your
 
 Because all the code generation is done at compile time, it means that your
 parser will be type safe, even if your target runtime does not support such a
@@ -13,9 +13,11 @@ It's written in [Haxe](http://haxe.org). You can target any language Haxe can
 target.
 
 ## An example
-First, we're going to try to match the sign of an integer. We'll say the sign
-can either be present at `-` or not present at all. First, we'll write a parser
-to match the `-` string alone.
+First, we're going to try to match the sign of an integer. If some integer is
+prefixed with `-`, it's negative. If it has no prefix, it's positive. So, we
+need a rule that'll give us either `'-'` or `''`. We'll say the sign can either
+be present with the value `-` or not present at all, and we'll give it the value
+`''`. First, we'll write a parser to match the `-` string alone.
 
 ```haxe
   static var minus = Parser.apply('-', function(s: String) {
@@ -44,10 +46,11 @@ to match the `-` string alone.
 
 Cool, so we know we can match a minus character pretty quickly. But the rule is
 that if there's a `'-'` char, the rule should give us `'-'`, otherwise, the rule
-should give us an empty string, `''`. Right now, it fails to parse, so we need
-to fix that by invoking the optional `~` operator. This rule will hand our
-function `null` if the value has not been matched, and the matched value if it
-has. We need to transform the null value into an empty string.
+should give us an empty string, `''`. Right now, it fails to parse an omitted
+sign, so we need to fix that by invoking the `~` operator, meaning "optional".
+This rule will hand our function `null` if the value has not been matched, and
+the matched value if it has. We just need to transform the null value into an
+empty string.
 
 ```haxe
   static var sign = Parser.apply(~minus, function(s: String) {
@@ -121,7 +124,7 @@ means" function. Take a seat and watch as we now parse signed integer.
 
 ```haxe
   static var int = Parser.apply(
-    sign > digits,
+    sign > digits, // Give me a sign (optional!), then some run of digits
     function(sign: String, digits: String) {
       return Std.parseInt(sign + digits);
     }
