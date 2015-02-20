@@ -11,6 +11,14 @@ import winnepego.Parser;
       using Parsers;
 **/
 class Parsers {
+  private static var noop = function(s) { return s; }
+
+  static public var wsVal = Parser.apply((' ' | '\t' | '\r' | '\n'), noop);
+
+  static public var whitespace = Parser.apply(
+    ++wsVal,
+    function(chars: Array<String>) { return chars.join(''); }
+  );
 
   static public var sign = Parser.apply(~'-', function(sign: String) {
     return if(sign == null) '' else sign;
@@ -30,10 +38,18 @@ class Parsers {
 
   static public var int = Parser.apply(signedDigits, Std.parseInt);
 
+  private static var floatTail = Parser.apply(
+    '.' > digits,
+    function(dot: String, digits: String) {
+      return '.' + digits;
+    }
+  );
+
   static public var float = Parser.apply(
-    signedDigits > '.' > digits,
-    function(sign: String, _: String, digits: String) {
-      return Std.parseFloat(sign +'.'+ digits);
+    signedDigits > ~floatTail,
+    function(digits: String, decimal: String) {
+      if(decimal == null) decimal = '.0';
+      return Std.parseFloat(digits + decimal);
     }
   );
 

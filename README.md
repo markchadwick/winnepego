@@ -20,28 +20,28 @@ be present with the value `-` or not present at all, and we'll give it the value
 `''`. First, we'll write a parser to match the `-` string alone.
 
 ```haxe
-  static var minus = Parser.apply('-', function(s: String) {
-    return s;
-  });
+static var minus = Parser.apply('-', function(s: String) {
+  return s;
+});
 
-  function testMinus() {
-    var input = Bytes.ofString('-');
+function testMinus() {
+  var input = Bytes.ofString('-');
 
-    switch(minus(input, 0)) {
-      case Pass(_, _, value): assertEquals('-', value);
-      case other: throw "unexpected "+ other;
-    };
-  }
+  switch(minus(input, 0)) {
+    case Pass(_, _, value): assertEquals('-', value);
+    case other: throw "unexpected "+ other;
+  };
+}
 
-  function testNotMinus() {
-    var input = Bytes.ofString('+');
+function testNotMinus() {
+  var input = Bytes.ofString('+');
 
-    switch(minus(input, 0)) {
-      case Pass(_, _, _): throw "should not have passed!";
-      case Fail(_, _, error):
-        assertEquals("Expected '-' got '+'", error);
-    };
-  }
+  switch(minus(input, 0)) {
+    case Pass(_, _, _): throw "should not have passed!";
+    case Fail(_, _, error):
+      assertEquals("Expected '-' got '+'", error);
+  };
+}
 ```
 
 Cool, so we know we can match a minus character pretty quickly. But the rule is
@@ -53,67 +53,67 @@ the matched value if it has. We just need to transform the null value into an
 empty string.
 
 ```haxe
-  static var sign = Parser.apply(~minus, function(s: String) {
-    return if(s == null) '' else s;
-  });
+static var sign = Parser.apply(~minus, function(s: String) {
+  return if(s == null) '' else s;
+});
 
-  function testSignMinus() {
-    var input = Bytes.ofString('-');
+function testSignMinus() {
+  var input = Bytes.ofString('-');
 
-    switch(sign(input, 0)) {
-      case Pass(_, _, value): assertEquals('-', value);
-      case other: throw "unexpected "+ other;
-    };
-  }
+  switch(sign(input, 0)) {
+    case Pass(_, _, value): assertEquals('-', value);
+    case other: throw "unexpected "+ other;
+  };
+}
 
-  function testSignOther() {
-    var input = Bytes.ofString('+');
+function testSignOther() {
+  var input = Bytes.ofString('+');
 
-    switch(sign(input, 0)) {
-      case Pass(_, _, value): assertEquals('', value);
-      case other: throw "unexpected "+ other;
-    };
-  }
+  switch(sign(input, 0)) {
+    case Pass(_, _, value): assertEquals('', value);
+    case other: throw "unexpected "+ other;
+  };
+}
 
-  function testSignEmpty() {
-    var input = Bytes.ofString('');
+function testSignEmpty() {
+  var input = Bytes.ofString('');
 
-    switch(sign(input, 0)) {
-      case Pass(_, _, value): assertEquals('', value);
-      case other: throw "unexpected "+ other;
-    };
-  }
+  switch(sign(input, 0)) {
+    case Pass(_, _, value): assertEquals('', value);
+    case other: throw "unexpected "+ other;
+  };
+}
 ```
 
 Okay. That's pretty robust.
 
 Next we'd want to define a string of digits. Check this jam out. Taking baby
-steps each way, we're first going to describe what it looks like when there's a
-bunch of contiguous numbers all run up next to each other. Callin' 'em `digits`
-here.
+step , we're first going to describe what it looks like when there's a bunch of
+contiguous numbers all run up next to each other. Callin' 'em `digits` here.
 
 In regex terms, this would be `[0-9]+`. Note that in the test case here, there's
-trailing input. We just ignore that for now, be we not in the matching test case
-that `pos` has been advanced to `5`. You can use this or not. I'm not your mom.
+trailing input. We just ignore that for now, but we can confirm that `pos` has
+only been advanced to `5` (the end of the digits). You can use this or not. I'm
+not your mom.
 
 ```haxe
-  static var digits = Parser.apply(
-    ('0'-'9')++,
-    function(digits: Array<String>) {
-      return digits.join('');
-    }
-  );
-
-  function testDigits() {
-    var input = Bytes.ofString('12345, right?');
-
-    switch(digits(input, 0)) {
-      case Pass(_, pos, value):
-        assertEquals(5, pos);
-        assertEquals('12345', value);
-      case other: throw "unexpected "+ other;
-    };
+static var digits = Parser.apply(
+  ('0'-'9')++,
+  function(digits: Array<String>) {
+    return digits.join('');
   }
+);
+
+function testDigits() {
+  var input = Bytes.ofString('12345, right?');
+
+  switch(digits(input, 0)) {
+    case Pass(_, pos, value):
+      assertEquals(5, pos);
+      assertEquals('12345', value);
+    case other: throw "unexpected "+ other;
+  };
+}
 ```
 
 Christ, anyway. Let's wrap this up. I want to parse integers not write crap all
@@ -123,30 +123,30 @@ mindful here is that it will cause a second argument to grow on your "what it
 means" function. Take a seat and watch as we now parse signed integer.
 
 ```haxe
-  static var int = Parser.apply(
-    sign > digits, // Give me a sign (either '-' or ''), then some run of digits
-    function(sign: String, digits: String) {
-      return Std.parseInt(sign + digits);
-    }
-  );
-
-  function testNegativeInteger() {
-    var input = Bytes.ofString('-666');
-
-    switch(int(input, 0)) {
-      case Pass(_, _, value): assertEquals(-666, value);
-      case other: throw "unexpected "+ other;
-    };
+static var int = Parser.apply(
+  sign > digits, // Give me a sign (either '-' or ''), then some run of digits
+  function(sign: String, digits: String) {
+    return Std.parseInt(sign + digits);
   }
+);
 
-  function testPositiveInteger() {
-    var input = Bytes.ofString('666');
+function testNegativeInteger() {
+  var input = Bytes.ofString('-666');
 
-    switch(int(input, 0)) {
-      case Pass(_, _, value): assertEquals(666, value);
-      case other: throw "unexpected "+ other;
-    };
-  }
+  switch(int(input, 0)) {
+    case Pass(_, _, value): assertEquals(-666, value);
+    case other: throw "unexpected "+ other;
+  };
+}
+
+function testPositiveInteger() {
+  var input = Bytes.ofString('666');
+
+  switch(int(input, 0)) {
+    case Pass(_, _, value): assertEquals(666, value);
+    case other: throw "unexpected "+ other;
+  };
+}
 ```
 
 ## Rules
@@ -237,9 +237,9 @@ var numDogs = apply(Parsers.int > ' dogs', function(count: Int, s: String) {
 guhboy.
 
 ## Rule Syntax
-Why in the word would this pile of garbage require `++'6'` instead of `'6'*`?
-The Haxe lexer needs to parse it. Or maybe it doesn't, and there's a thing I
-don't know. I wrote out the rules in this README here so you didn't have to
-think about it too hard. But if that's still too difficult, we're probably not
-going to get along anyway. You know? Are we just wasting each other's time?
-You're right, though.
+Why in the word would this pile of garbage require `++'6'` instead of `6*`?  The
+Haxe lexer needs to parse it. Or maybe it doesn't, and there's a thing I don't
+know. I wrote out the rules in this README here so you didn't have to think
+about it too hard. But if that's still too difficult, we're probably not going
+to get along anyway. You know? Are we just wasting each other's time?  You're
+right, though.

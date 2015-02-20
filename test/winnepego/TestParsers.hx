@@ -8,6 +8,16 @@ import winnepego.Parser;
 
 class TestParsers extends TestCase {
 
+  function testBasicWhitespace() {
+    var result = Parsers.whitespace(Bytes.ofString(' \t\n'), 0);
+    assertPass(' \t\n', result);
+  }
+
+  function testNoWhitespace() {
+    var result = Parsers.whitespace(Bytes.ofString(''), 0);
+    assertPass('', result);
+  }
+
   function testSignNegative() {
     var result = Parsers.sign(Bytes.ofString('-'), 0);
     assertPass('-', result);
@@ -21,6 +31,11 @@ class TestParsers extends TestCase {
   function testDigits() {
     var result = Parsers.digits(Bytes.ofString('666'), 0);
     assertPass('666', result);
+  }
+
+  function testDigit() {
+    var result = Parsers.digits(Bytes.ofString('0'), 0);
+    assertPass('0', result);
   }
 
   function testSignedDigits() {
@@ -41,6 +56,16 @@ class TestParsers extends TestCase {
   function testUnsignedFloat() {
     var result = Parsers.float(Bytes.ofString('3.14159'), 0);
     assertPass(3.14159, result);
+  }
+
+  function testNoDecimalFloat() {
+    var result = Parsers.float(Bytes.ofString('3.'), 0);
+    assertPass(3.0, result);
+  }
+
+  function testIntegralFloat() {
+    var result = Parsers.float(Bytes.ofString('3'), 0);
+    assertPass(3.0, result);
   }
 
   function assertPass<A>(v: A, res: LexResult<A>) {

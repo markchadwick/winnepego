@@ -18,6 +18,18 @@ class Parser {
     return getParser(e, fn);
   }
 
+  macro public static function debug(e: Expr, fn: Expr) {
+    var parser = getParser(e, fn);
+    trace('---------------------------------------------------------------');
+    trace('parser: '+ p.printExpr(parser));
+    trace('---------------------------------------------------------------');
+    trace('expr: '+ p.printExpr(e));
+    trace('---------------------------------------------------------------');
+    trace('fun: '+ p.printExpr(fn));
+    trace('---------------------------------------------------------------');
+    return parser;
+  }
+
   public static function printFailure<A>(res: LexResult<A>): String {
     return switch(res) {
       case Pass(_, _, v): throw "Not a failure: "+ v;
@@ -28,35 +40,6 @@ class Parser {
         lines.push(spacers.join('') + '^');
         return lines.join('\n');
     }
-  }
-
-  macro public static function debug(e: Expr, fn: Expr) {
-    var parser  = getParser(e, fn);
-    var ruleStr = p.printExpr(e);
-
-    Sys.println("\n---------------------------------------------------");
-    Sys.println("Parser:");
-    Sys.println(p.printExpr(parser));
-
-    var debugged = macro function(buf: Bytes, pos: Int) {
-      Sys.println("\n---------------------------------------------------");
-      Sys.println("rule:   "+ $v{ruleStr});
-      Sys.println("input:  "+ buf);
-      Sys.println("pos:    "+ pos);
-
-      switch(${parser}(buf, pos)) {
-
-        case Pass(buf, pos, value):
-          Sys.print("passed with value: '"+ value +"'");
-          Pass(buf, pos, value);
-
-        case Fail(buf, pos, error):
-          Sys.print("failed: "+ error);
-          Fail(buf, pos, error);
-      }
-    }
-
-    return debugged;
   }
 
   #if macro
@@ -229,7 +212,7 @@ class Parser {
         }
       }
 
-      if(results.length > $v{min}) {
+      if(results.length >= $v{min}) {
         Pass(buf, pos, results);
       } else {
         Fail(buf, lastFailPos, lastFail);
