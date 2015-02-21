@@ -4,11 +4,11 @@ import haxe.io.Bytes;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
+
 enum LexResult<T> {
   Pass(buf: Bytes, pos: Int, value: T);
   Fail(buf: Bytes, pos: Int, error: String);
 }
-
 
 class Parser {
 

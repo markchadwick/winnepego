@@ -13,6 +13,43 @@ import winnepego.Parser;
 class Parsers {
   private static var noop = function(s) { return s; }
 
+  static public function repSep<A, B>(
+        p0: Bytes -> Int -> LexResult<A>,
+        p1: Bytes -> Int -> LexResult<B>):
+      Bytes -> Int -> LexResult<Array<A>> {
+
+    return function(buf: Bytes, pos: Int) {
+      var results = new Array<A>();
+      var buf0    = buf;
+      var pos0    = pos;
+
+      while(true) {
+
+        // Match prefix. If it matches, advance, otherwise return.
+        switch(p0(buf0, pos0)) {
+          case Pass(buf1, pos1, result):
+            buf0 = buf1;
+            pos0 = pos1;
+            results.push(result);
+          case Fail(buf1, pos1, error):
+            return Fail(buf1, pos1, error);
+        }
+
+        // Match the seperator. Keep going if it matches, return results when it
+        // fails
+        switch(p1(buf0, pos0)) {
+          case Pass(buf1, pos1, _):
+            buf0 = buf1;
+            pos0 = pos1;
+          case Fail(buf1, pos1, error):
+            return Pass(buf1, pos0, results);
+        }
+      }
+
+      return Pass(buf0, pos0, results);
+    }
+  }
+
   static public var wsVal = Parser.apply((' ' | '\t' | '\r' | '\n'), noop);
 
   static public var whitespace = Parser.apply(
