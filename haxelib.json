@@ -1,0 +1,8 @@
+{
+  "name":         "winnepego",
+  "version":      "0.0.0",
+  "description":  "Macros to create parsers out of simple rules",
+
+  "classPath":    "src/",
+  "url":          "https://github.com/markchadwick/winnepego"
+}
