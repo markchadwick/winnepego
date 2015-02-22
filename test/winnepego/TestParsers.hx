@@ -13,11 +13,6 @@ class TestParsers extends TestCase {
     assertPass(' \t\n', result);
   }
 
-  function testNoWhitespace() {
-    var result = Parsers.whitespace(Bytes.ofString(''), 0);
-    assertPass('', result);
-  }
-
   function testSignNegative() {
     var result = Parsers.sign(Bytes.ofString('-'), 0);
     assertPass('-', result);
@@ -66,6 +61,53 @@ class TestParsers extends TestCase {
   function testIntegralFloat() {
     var result = Parsers.float(Bytes.ofString('3'), 0);
     assertPass(3.0, result);
+  }
+
+  function testOneRepeated() {
+    var parser = Parsers.repSep(
+      Parser.apply('name', Parsers.noop),
+      Parser.apply(', ', Parsers.noop));
+
+    var result = parser(Bytes.ofString('name'), 0);
+    switch(result) {
+      case Pass(_, _, names):
+        assertEquals(1, names.length);
+        assertEquals('name', names[0]);
+      case Fail(_, _, msg):
+        throw msg;
+    }
+  }
+
+  function testThreeRepeated() {
+    var parser = Parsers.repSep(
+      Parser.apply('name', Parsers.noop),
+      Parser.apply(', ', Parsers.noop));
+
+    var input  = Bytes.ofString('name, name, name, fame');
+    var result = parser(input, 0);
+    switch(result) {
+      case Pass(_, _, names):
+        assertEquals(3, names.length);
+        assertEquals('name', names[0]);
+        assertEquals('name', names[1]);
+        assertEquals('name', names[2]);
+      case Fail(_, _, msg):
+        throw msg;
+    }
+  }
+
+  function testZeroRepeated() {
+    var parser = Parsers.repSep(
+      Parser.apply('name', Parsers.noop),
+      Parser.apply(', ', Parsers.noop));
+
+    var result = parser(Bytes.ofString(''), 0);
+    switch(result) {
+      case Pass(_, _, names):
+        assertEquals(0, names.length);
+      case Fail(_, _, msg):
+        throw msg;
+    }
   }
 
   function assertPass<A>(v: A, res: LexResult<A>) {

@@ -32,7 +32,7 @@ class Parsers {
             pos0 = pos1;
             results.push(result);
           case Fail(buf1, pos1, error):
-            return Fail(buf1, pos1, error);
+            return Pass(buf0, pos0, results);
         }
 
         // Match the seperator. Keep going if it matches, return results when it
@@ -53,7 +53,7 @@ class Parsers {
   static public var wsVal = Parser.apply((' ' | '\t' | '\r' | '\n'), noop);
 
   static public var whitespace = Parser.apply(
-    ++wsVal,
+    wsVal++,
     function(chars: Array<String>) { return chars.join(''); }
   );
 
