@@ -125,15 +125,15 @@ class TestWKT extends TestCase {
    */
 
   function assertParsesTo<A>(exp: A,
-                             parser: Bytes -> Int -> LexResult<A>,
+                             parser: Bytes -> Int -> ParseResult<A>,
                              s: String,
                              ?c: PosInfos) {
 
     switch(parse(parser, s)) {
-      case Pass(_, _, value):
+      case Pass(_, value):
         assertEquals(exp, value);
 
-      case Fail(_, _, error):
+      case Fail(_, error):
         currentTest.success  = false;
         currentTest.error    = error;
         currentTest.posInfos = c;
@@ -141,14 +141,14 @@ class TestWKT extends TestCase {
     }
   }
 
-  function parse<A>(parser: Bytes -> Int -> LexResult<A>, s: String): LexResult<A> {
+  function parse<A>(parser: Bytes -> Int -> ParseResult<A>, s: String): ParseResult<A> {
     return parser(Bytes.ofString(s), 0);
   }
 
-  function mustParse<A>(parser: Bytes -> Int -> LexResult<A>, s: String): A {
+  function mustParse<A>(parser: Bytes -> Int -> ParseResult<A>, s: String): A {
     switch(parse(parser, s)) {
-      case Pass(_, _, value): return value;
-      case fail: throw Parser.printFailure(fail);
+      case Pass(_, value): return value;
+      case Fail(_, msg): throw msg;
     }
   }
 }

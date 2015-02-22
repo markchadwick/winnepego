@@ -14,7 +14,6 @@ class Test {
     runner.add(new TestParser());
     runner.add(new TestParsers());
     runner.add(new TestWKT());
-    runner.add(new TestWKT2());
 
     runner.run();
   }

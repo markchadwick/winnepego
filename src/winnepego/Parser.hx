@@ -5,9 +5,9 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 
 
-enum LexResult<T> {
-  Pass(buf: Bytes, pos: Int, value: T);
-  Fail(buf: Bytes, pos: Int, error: String);
+enum ParseResult<T> {
+  Pass(pos: Int, value: T);
+  Fail(pos: Int, error: String);
 }
 
 class Parser {
@@ -18,29 +18,29 @@ class Parser {
     return getParser(e, fn);
   }
 
-  macro public static function debug(e: Expr, fn: Expr) {
-    var parser = getParser(e, fn);
-    trace('---------------------------------------------------------------');
-    trace('parser: '+ p.printExpr(parser));
-    trace('---------------------------------------------------------------');
-    trace('expr: '+ p.printExpr(e));
-    trace('---------------------------------------------------------------');
-    trace('fun: '+ p.printExpr(fn));
-    trace('---------------------------------------------------------------');
-    return parser;
-  }
+  // macro public static function debug(e: Expr, fn: Expr) {
+  //   var parser = getParser(e, fn);
+  //   trace('---------------------------------------------------------------');
+  //   trace('parser: '+ p.printExpr(parser));
+  //   trace('---------------------------------------------------------------');
+  //   trace('expr: '+ p.printExpr(e));
+  //   trace('---------------------------------------------------------------');
+  //   trace('fun: '+ p.printExpr(fn));
+  //   trace('---------------------------------------------------------------');
+  //   return parser;
+  // }
 
-  public static function printFailure<A>(res: LexResult<A>): String {
-    return switch(res) {
-      case Pass(_, _, v): throw "Not a failure: "+ v;
-      case Fail(buf, pos, error):
-        var idxedErr = '['+ pos +']: ' + error;
-        var lines   = [idxedErr, buf.toString()];
-        var spacers = [for(i in 0...pos-1) ' '];
-        lines.push(spacers.join('') + '^');
-        return lines.join('\n');
-    }
-  }
+  // public static function printFailure<A>(res: ParseResult<A>): String {
+  //   return switch(res) {
+  //     case Pass(_, v): throw "Not a failure: "+ v;
+  //     case Fail(pos, error):
+  //       var idxedErr = '['+ pos +']: ' + error;
+  //       var lines   = [idxedErr, buf.toString()];
+  //       var spacers = [for(i in 0...pos-1) ' '];
+  //       lines.push(spacers.join('') + '^');
+  //       return lines.join('\n');
+  //   }
+  // }
 
   #if macro
 
@@ -77,14 +77,14 @@ class Parser {
 
       macro {
         var $resultName = value;
-        return Pass(buf, pos, ${callExpr});
+        return Pass(pos, ${callExpr});
       }
     }
 
     return macro switch(${expr}) {
-      case Fail(buf, pos, error):
-        return Fail(buf, pos, error);
-      case Pass(buf, pos, value):
+      case Fail(pos, error):
+        return Fail(pos, error);
+      case Pass(pos, value):
         ${passConition}
     }
   }
@@ -147,14 +147,14 @@ class Parser {
   static function lit(s: String): Expr {
     return macro {
       if(pos + $v{s.length} > _bufLen) {
-        Fail(buf, pos, "Unexpected EOF");
+        Fail(pos, "Unexpected EOF");
       } else {
         switch(buf.getString(pos, $v{s.length})) {
           case pass if(pass == $v{s}):
-            Pass(buf, pos + $v{s.length}, pass);
+            Pass(pos + $v{s.length}, pass);
           case err:
             var error = "Expected '"+ $v{s} +"' got '"+ err +"'";
-            Fail(buf, pos + $v{s.length}, error);
+            Fail(pos + $v{s.length}, error);
         }
       }
     }
@@ -163,13 +163,13 @@ class Parser {
   static function range(l: String, r: String): Expr {
     return macro {
       if(pos + 1 > _bufLen) {
-        Fail(buf, pos, "Unexpected EOF");
+        Fail(pos, "Unexpected EOF");
       } else {
         switch(buf.getString(pos, 1)) {
-          case c if (c >= $v{l} && c <= $v{r}): Pass(buf, pos+1, c);
+          case c if (c >= $v{l} && c <= $v{r}): Pass(pos+1, c);
           case f:
             var error = "Expected "+ $v{l} +"-"+ $v{r} +" got '"+ f +"'";
-            Fail(buf, pos + 1, error);
+            Fail(pos + 1, error);
         }
       }
     }
@@ -177,8 +177,8 @@ class Parser {
 
   static function lexOr(l: Expr, r: Expr): Expr {
     return macro switch(${l}) {
-      case Pass(buf, pos, value): Pass(buf, pos, value);
-      case Fail(buf0, pos0, _): ${r};
+      case Pass(pos, value): Pass(pos, value);
+      case Fail(_, _): ${r};
     }
   }
 
@@ -186,7 +186,7 @@ class Parser {
   static function optional(e: Expr): Expr {
     return macro {
       switch(${e}) {
-        case Fail(buf, p0, msg): Pass(buf, pos, null);
+        case Fail(_, msg): Pass(pos, null);
         case pass: pass;
       }
     }
@@ -203,19 +203,19 @@ class Parser {
 
       while(lastFail == null) {
         switch(${e}) {
-          case Pass(buf0, pos0, value):
+          case Pass(pos0, value):
             pos = pos0;
             results.push(value);
-          case Fail(_, pos, msg):
+          case Fail(pos, msg):
             lastFailPos = pos;
             lastFail = msg;
         }
       }
 
       if(results.length >= $v{min}) {
-        Pass(buf, pos, results);
+        Pass(pos, results);
       } else {
-        Fail(buf, lastFailPos, lastFail);
+        Fail(lastFailPos, lastFail);
       }
     }
   }

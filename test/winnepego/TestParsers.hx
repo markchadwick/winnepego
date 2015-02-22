@@ -70,10 +70,10 @@ class TestParsers extends TestCase {
 
     var result = parser(Bytes.ofString('name'), 0);
     switch(result) {
-      case Pass(_, _, names):
+      case Pass(_, names):
         assertEquals(1, names.length);
         assertEquals('name', names[0]);
-      case Fail(_, _, msg):
+      case Fail(_, msg):
         throw msg;
     }
   }
@@ -86,12 +86,12 @@ class TestParsers extends TestCase {
     var input  = Bytes.ofString('name, name, name, fame');
     var result = parser(input, 0);
     switch(result) {
-      case Pass(_, _, names):
+      case Pass(_, names):
         assertEquals(3, names.length);
         assertEquals('name', names[0]);
         assertEquals('name', names[1]);
         assertEquals('name', names[2]);
-      case Fail(_, _, msg):
+      case Fail(_, msg):
         throw msg;
     }
   }
@@ -103,18 +103,18 @@ class TestParsers extends TestCase {
 
     var result = parser(Bytes.ofString(''), 0);
     switch(result) {
-      case Pass(_, _, names):
+      case Pass(_, names):
         assertEquals(0, names.length);
-      case Fail(_, _, msg):
+      case Fail(_, msg):
         throw msg;
     }
   }
 
-  function assertPass<A>(v: A, res: LexResult<A>) {
+  function assertPass<A>(v: A, res: ParseResult<A>) {
     switch(res) {
-      case Pass(_, _, value): assertEquals(value, v);
-      case Fail(buf, pos, error):
-        throw Parser.printFailure(Fail(buf, pos, error));
+      case Pass(_, value): assertEquals(value, v);
+      case Fail(_, error):
+        throw error;
     }
   }
 }

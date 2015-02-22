@@ -20,7 +20,7 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('-');
 
     switch(minus(input, 0)) {
-      case Pass(_, _, value): assertEquals('-', value);
+      case Pass(_, value): assertEquals('-', value);
       case other: throw "unexpected "+ other;
     };
   }
@@ -29,8 +29,8 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('+');
 
     switch(minus(input, 0)) {
-      case Pass(_, _, _): throw "should not have passed!";
-      case Fail(_, _, error):
+      case Pass(_, _): throw "should not have passed!";
+      case Fail(_, error):
         assertEquals("Expected '-' got '+'", error);
     };
   }
@@ -47,7 +47,7 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('-');
 
     switch(sign(input, 0)) {
-      case Pass(_, _, value): assertEquals('-', value);
+      case Pass(_, value): assertEquals('-', value);
       case other: throw "unexpected "+ other;
     };
   }
@@ -56,7 +56,7 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('+');
 
     switch(sign(input, 0)) {
-      case Pass(_, _, value): assertEquals('', value);
+      case Pass(_, value): assertEquals('', value);
       case other: throw "unexpected "+ other;
     };
   }
@@ -65,7 +65,7 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('');
 
     switch(sign(input, 0)) {
-      case Pass(_, _, value): assertEquals('', value);
+      case Pass(_, value): assertEquals('', value);
       case other: throw "unexpected "+ other;
     };
   }
@@ -85,7 +85,7 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('12345, right?');
 
     switch(digits(input, 0)) {
-      case Pass(_, pos, value):
+      case Pass(pos, value):
         assertEquals(5, pos);
         assertEquals('12345', value);
       case other: throw "unexpected "+ other;
@@ -107,7 +107,7 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('-666');
 
     switch(int(input, 0)) {
-      case Pass(_, _, value): assertEquals(-666, value);
+      case Pass(_, value): assertEquals(-666, value);
       case other: throw "unexpected "+ other;
     };
   }
@@ -116,7 +116,7 @@ class TestExample extends TestCase {
     var input = Bytes.ofString('666');
 
     switch(int(input, 0)) {
-      case Pass(_, _, value): assertEquals(666, value);
+      case Pass(_, value): assertEquals(666, value);
       case other: throw "unexpected "+ other;
     };
   }
