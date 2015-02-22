@@ -20,15 +20,13 @@ be present with the value `-` or not present at all, and we'll give it the value
 `''`. First, we'll write a parser to match the `-` string alone.
 
 ```haxe
-static var minus = Parser.apply('-', function(s: String) {
-  return s;
-});
+static var minus = Parser.apply('-', function(s) { return s; });
 
 function testMinus() {
   var input = Bytes.ofString('-');
 
   switch(minus(input, 0)) {
-    case Pass(_, _, value): assertEquals('-', value);
+    case Pass(_, value): assertEquals('-', value);
     case other: throw "unexpected "+ other;
   };
 }
@@ -37,8 +35,8 @@ function testNotMinus() {
   var input = Bytes.ofString('+');
 
   switch(minus(input, 0)) {
-    case Pass(_, _, _): throw "should not have passed!";
-    case Fail(_, _, error):
+    case Pass(_, _): throw "should not have passed!";
+    case Fail(_, error):
       assertEquals("Expected '-' got '+'", error);
   };
 }
@@ -53,15 +51,15 @@ the matched value if it has. We just need to transform the null value into an
 empty string.
 
 ```haxe
-static var sign = Parser.apply(~minus, function(s: String) {
-  return if(s == null) '' else s;
-});
+static var sign = Parser.apply(
+  ~minus,
+  function(s) { return if(s == null) '' else s; });
 
 function testSignMinus() {
   var input = Bytes.ofString('-');
 
   switch(sign(input, 0)) {
-    case Pass(_, _, value): assertEquals('-', value);
+    case Pass(_, value): assertEquals('-', value);
     case other: throw "unexpected "+ other;
   };
 }
@@ -70,7 +68,7 @@ function testSignOther() {
   var input = Bytes.ofString('+');
 
   switch(sign(input, 0)) {
-    case Pass(_, _, value): assertEquals('', value);
+    case Pass(_, value): assertEquals('', value);
     case other: throw "unexpected "+ other;
   };
 }
@@ -79,7 +77,7 @@ function testSignEmpty() {
   var input = Bytes.ofString('');
 
   switch(sign(input, 0)) {
-    case Pass(_, _, value): assertEquals('', value);
+    case Pass(_, value): assertEquals('', value);
     case other: throw "unexpected "+ other;
   };
 }
@@ -99,16 +97,13 @@ not your mom.
 ```haxe
 static var digits = Parser.apply(
   ('0'-'9')++,
-  function(digits: Array<String>) {
-    return digits.join('');
-  }
-);
+  function(digits) { return digits.join(''); });
 
 function testDigits() {
   var input = Bytes.ofString('12345, right?');
 
   switch(digits(input, 0)) {
-    case Pass(_, pos, value):
+    case Pass(pos, value):
       assertEquals(5, pos);
       assertEquals('12345', value);
     case other: throw "unexpected "+ other;
@@ -124,7 +119,7 @@ means" function. Take a seat and watch as we now parse signed integer.
 
 ```haxe
 static var int = Parser.apply(
-  sign > digits, // Give me a sign (either '-' or ''), then some run of digits
+  sign > digits,
   function(sign: String, digits: String) {
     return Std.parseInt(sign + digits);
   }
@@ -134,7 +129,7 @@ function testNegativeInteger() {
   var input = Bytes.ofString('-666');
 
   switch(int(input, 0)) {
-    case Pass(_, _, value): assertEquals(-666, value);
+    case Pass(_, value): assertEquals(-666, value);
     case other: throw "unexpected "+ other;
   };
 }
@@ -143,7 +138,7 @@ function testPositiveInteger() {
   var input = Bytes.ofString('666');
 
   switch(int(input, 0)) {
-    case Pass(_, _, value): assertEquals(666, value);
+    case Pass(_, value): assertEquals(666, value);
     case other: throw "unexpected "+ other;
   };
 }

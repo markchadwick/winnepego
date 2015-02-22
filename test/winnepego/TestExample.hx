@@ -12,9 +12,7 @@ class TestExample extends TestCase {
   // Minus Rule
   // ---------------------------------------------------------------------------
 
-  static var minus = Parser.apply('-', function(s: String) {
-    return s;
-  });
+  static var minus = Parser.apply('-', function(s) { return s; });
 
   function testMinus() {
     var input = Bytes.ofString('-');
@@ -39,9 +37,9 @@ class TestExample extends TestCase {
   // Sign Rule
   // ---------------------------------------------------------------------------
 
-  static var sign = Parser.apply(~minus, function(s: String) {
-    return if(s == null) '' else s;
-  });
+  static var sign = Parser.apply(
+    ~minus,
+    function(s) { return if(s == null) '' else s; });
 
   function testSignMinus() {
     var input = Bytes.ofString('-');
@@ -76,10 +74,7 @@ class TestExample extends TestCase {
 
   static var digits = Parser.apply(
     ('0'-'9')++,
-    function(digits: Array<String>) {
-      return digits.join('');
-    }
-  );
+    function(digits) { return digits.join(''); });
 
   function testDigits() {
     var input = Bytes.ofString('12345, right?');

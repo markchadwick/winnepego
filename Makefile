@@ -21,4 +21,4 @@ compiler.js:
 	  	-cp src \
 	  	-cp test \
       -js compiler.js \
-      winnepego.TestWKT2
+      winnepego.TestWKT
